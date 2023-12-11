@@ -110,7 +110,7 @@
                 }
                 let results = '';
                 for (let r of runs) {
-                    results += `${r.type}: ${r.distance}<br>`;
+                    results += `${r.type}: ${r.distance} <a href="https://calendar.google.com/calendar/u/0/r/eventedit?text=${r.type}+run+${r.distance}+miles">Add to Google Calendar</a><br>`;
                 }
                 document.getElementById('results').innerHTML = results;
             }
