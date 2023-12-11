@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Random Run Generator</title>
+</head>
+
+<body>
+    <h1>Random Run Generator</h1>
+    <form>
+        <label for="days">
+            <p>How many days would you like to run in a week?</p>
+            <input id="days" type="number" name="days">
+        </label>
+        <label for="miles">
+            <p>How many total miles?</p>
+            <input id="miles" type="number" name="miles">
+        </label>
+        <p>What types of runs?</p>
+        <label for="jog">
+            <p>
+                <input type="checkbox" id="jog" value="jog" name="types" checked>
+                Jog
+            </p>
+        </label>
+        <label for="long">
+            <p>
+                <input type="checkbox" id="long" value="long" name="types">
+                Long (Only once per week)
+            </p>
+        </label>
+        <label for="progression">
+            <p>
+                <input type="checkbox" id="progression" value="progression" name="types">
+                Progression (Only once per week)
+            </p>
+        </label>
+        <label for="fartlek">
+            <p>
+                <input type="checkbox" id="fartlek" value="fartlek" name="types">
+                Fartlek (Only once per week)
+            </p>
+        </label>
+        <p>
+            <input type="submit" name="submitted" value="Generate" aria-label="Generate">
+        </p>
+    </form>
+
+    <div id="results">
+
+    </div>
+    <script>
+        const jog = () => {
+            return Math.ceil(miles / days);
+        }
+        const long = () => {
+            return Math.ceil(miles * .4);
+        }
+
+        const urlParams = new URLSearchParams(document.location.search)
+        const days = urlParams.get('days');
+        document.getElementById('days').value = days;
+        let miles = urlParams.get('miles');
+        document.getElementById('miles').value = miles;
+        let selectedWorkoutTypes = [];
+        const availableWorkoutTypes = ['jog', 'long', 'progression', 'fartlek'];
+        for (const [key, value] of urlParams.entries()) {
+            for (const workout of availableWorkoutTypes) {
+                if (key === 'types' && value === workout) {
+                    selectedWorkoutTypes.push(workout);
+                    document.getElementById(workout).checked = true;
+                }
+            }
+        }
+
+        if (urlParams.get('submitted') === 'Generate') {
+            if (Number(days) > 0 && Number(miles) > 0 && selectedWorkoutTypes.length > 0) {
+                const runs = [];
+                const generatedRuns = [];
+                for (let run = 0; run < days; run++) {
+                    generatedRuns.push(selectedWorkoutTypes[Math.floor(Math.random() * selectedWorkoutTypes.length)]);
+                    if (generatedRuns.includes('long')) {
+                        selectedWorkoutTypes = selectedWorkoutTypes.filter(function (e) { return e !== 'long' });
+                    }
+                    if (generatedRuns.includes('fartlek')) {
+                        selectedWorkoutTypes = selectedWorkoutTypes.filter(function (e) { return e !== 'fartlek' });
+                    }
+                    if (generatedRuns.includes('progression')) {
+                        selectedWorkoutTypes = selectedWorkoutTypes.filter(function (e) { return e !== 'progression' });
+                    }
+                }
+                console.log('generatedRuns', generatedRuns)
+                let totalDistance = 0;
+                let remainingDays = days;
+                for (let run of generatedRuns) {
+                    if (['jog', 'progression', 'fartlek'].includes(run)) {
+                        const jogDistance = jog(totalDistance, remainingDays);
+                        runs.push({ type: run, distance: jogDistance });
+                        totalDistance += jogDistance;
+                        remainingDays--;
+                    }
+                    if (run === 'long') {
+                        const longDistance = long();
+                        runs.push({ type: 'long', distance: longDistance });
+                        totalDistance += longDistance;
+                        remainingDays--;
+                    }
+                }
+                let results = '';
+                for (let r of runs) {
+                    results += `${r.type}: ${r.distance}<br>`;
+                }
+                document.getElementById('results').innerHTML = results;
+            }
+        }
+
+    </script>
+</body>
+
+</html>
